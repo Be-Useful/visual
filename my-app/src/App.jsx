@@ -51,63 +51,62 @@ function TowerDisplay({ rods, numDisks, moveCount }) {
 
 // Component for control buttons
 function Controls({
-  onStartReset, onPlayPause, onStepForward, onStepBackward,
-  isPlaying, numDisks, setNumDisks, isFinished, currentStep, totalSteps
+  onStartReset, onPlayPause, onStepForward, onStepBackward,
+  isPlaying, numDisks, setNumDisks, isFinished, currentStep, totalSteps
 }) {
-  return (
-    <div className="my-6 p-4 bg-gray-100 rounded-lg shadow">
-      <div className="flex flex-wrap justify-center items-center gap-4 mb-4">
-        <div className="flex items-center gap-2">
-          <label htmlFor="numDisks" className="text-sm font-medium text-gray-700">Number of Disks (1-8):</label>
-          <input
-            type="number"
-            id="numDisks"
-            min="1"
-            max="8" // More than 8 disks generate too many steps and a very large tree
-            value={numDisks}
-            onChange={(e) => setNumDisks(Math.max(1, Math.min(8, parseInt(e.target.value) || 1)))}
-            className="p-2 border border-gray-300 rounded-md shadow-sm w-20 text-center"
-            disabled={isPlaying || (currentStep > 0 && currentStep < totalSteps - 1) } // Disable if mid-simulation
-          />
-        </div>
-        <button
-          onClick={onStartReset}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out disabled:opacity-50"
-          // Allow reset even if playing to stop and restart
-        >
-          Start / Reset
-        </button>
-      </div>
-      <div className="flex flex-wrap justify-center items-center gap-3">
-        <button
-          onClick={onStepBackward}
-          className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out disabled:opacity-50"
-          disabled={isPlaying || currentStep <= 0} // Disable if playing or at the first step
-        >
-          {'<'} Step Back
-        </button>
-        <button
-          onClick={onPlayPause}
-          className={`px-6 py-2 font-semibold rounded-lg shadow-md transition duration-150 ease-in-out text-white disabled:opacity-50 ${isPlaying ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}`}
-          disabled={isFinished && !isPlaying} // Disable if finished and not playing (i.e. already paused at end)
-        >
-          {isPlaying ? 'Pause' : (isFinished ? 'Finished' : 'Play')}
-        </button>
-        <button
-          onClick={onStepForward}
-          className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out disabled:opacity-50"
-          disabled={isPlaying || isFinished} // Disable if playing or at the last step
-        >
-          Step Forward {'>'}
-        </button>
-      </div>
-      {totalSteps > 0 && (
-        <p className="text-center mt-3 text-sm text-gray-600">
-          Step: {currentStep + 1} / {totalSteps}
-        </p>
-      )}
-    </div>
-  );
+  return (
+    <div className="my-6 p-4 bg-gray-100 rounded-lg shadow">
+      <div className="flex flex-wrap justify-center items-center gap-4 mb-4">
+        <div className="flex items-center gap-2">
+          <label htmlFor="numDisks" className="text-sm font-medium text-gray-700">Number of Disks (1-8):</label>
+          <input
+            type="number"
+            id="numDisks"
+            min="1"
+            max="8"
+            value={numDisks}
+            onChange={(e) => setNumDisks(Math.max(1, Math.min(8, parseInt(e.target.value) || 1)))}
+            className="p-2 border border-gray-300 rounded-md shadow-sm w-20 text-center"
+            disabled={isPlaying || (currentStep > 0 && currentStep < totalSteps - 1)}
+          />
+        </div>
+        <button
+          onClick={onStartReset}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out disabled:opacity-50"
+        >
+          Start / Reset
+        </button>
+      </div>
+      <div className="flex flex-wrap justify-center items-center gap-3">
+        <button
+          onClick={onStepBackward}
+          className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out disabled:opacity-50"
+          disabled={isPlaying || currentStep <= 0}
+        >
+          {'<'} Step Back
+        </button>
+        <button
+          onClick={onPlayPause}
+          className={`px-6 py-2 font-semibold rounded-lg shadow-md transition duration-150 ease-in-out text-white disabled:opacity-50 ${isPlaying ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}`}
+          disabled={isFinished && !isPlaying}
+        >
+          {isPlaying ? 'Pause' : (isFinished ? 'Finished' : 'Play')}
+        </button>
+        <button
+          onClick={onStepForward}
+          className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out disabled:opacity-50"
+          disabled={isPlaying || isFinished}
+        >
+          Step Forward {'>'}
+        </button>
+      </div>
+      {totalSteps > 0 && (
+        <p className="text-center mt-3 text-sm text-gray-600">
+          Step: {currentStep + 1} / {totalSteps}
+        </p>
+      )}
+    </div>
+  );
 }
 
 // Component to display current action and call stack
@@ -271,9 +270,11 @@ function TreeNode({ node, allNodesMap, activeNodeId, nodePhase, depth, currentSt
 
 function RecursionTreeDisplay({ treeStructure, activeNodeId, nodePhase, currentStepIndex }) {
     const scrollContainerRef = useRef(null);
+    const [isUserScrolling, setIsUserScrolling] = useState(false);
+    const scrollTimeoutRef = useRef(null);
 
     useEffect(() => {
-        if (activeNodeId && scrollContainerRef.current) {
+        if (activeNodeId && scrollContainerRef.current && !isUserScrolling) {
             const activeNodeElement = scrollContainerRef.current.querySelector(
                 `[title*="Node ID: ${activeNodeId}"]`
             );
@@ -285,7 +286,30 @@ function RecursionTreeDisplay({ treeStructure, activeNodeId, nodePhase, currentS
                 });
             }
         }
-    }, [activeNodeId, currentStepIndex]);
+    }, [activeNodeId, currentStepIndex, isUserScrolling]);
+
+    const handleScroll = () => {
+        setIsUserScrolling(true);
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+        }
+        scrollTimeoutRef.current = setTimeout(() => {
+            setIsUserScrolling(false);
+        }, 1000); // Reset after 1 second of no scrolling
+    };
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => {
+                container.removeEventListener('scroll', handleScroll);
+                if (scrollTimeoutRef.current) {
+                    clearTimeout(scrollTimeoutRef.current);
+                }
+            };
+        }
+    }, []);
 
     if (!treeStructure || treeStructure.length === 0 || currentStepIndex < 0) {
         return (
@@ -332,6 +356,22 @@ function RecursionTreeDisplay({ treeStructure, activeNodeId, nodePhase, currentS
 }
 // --- End Recursion Tree Components ---
 
+// Add a new FloatingStopButton component
+function FloatingStopButton({ onStop, isPlaying }) {
+  if (!isPlaying) return null;
+  
+  return (
+    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+      <button
+        onClick={onStop}
+        className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full shadow-lg transition duration-150 ease-in-out flex items-center gap-2"
+      >
+        <span className="text-xl">⏹</span>
+        Stop
+      </button>
+    </div>
+  );
+}
 
 // Main App Component
 function App() {
@@ -342,10 +382,10 @@ function App() {
   const [intervalId, setIntervalId] = useState(null);
   const [treeStructure, setTreeStructure] = useState([]);
 
-  // Memoized current step data
-  const currentStepData = useMemo(() => {
-    if (currentStepIndex >= 0 && currentStepIndex < allSteps.length) {
-      return allSteps[currentStepIndex];
+// Memoized current step data
+const currentStepData = useMemo(() => {
+ if (currentStepIndex >= 0 && currentStepIndex < allSteps.length) {
+ return allSteps[currentStepIndex];
     }
     // Initial state before any steps are generated or when reset
     const initialRodsState = { A: [], B: [], C: [] };
@@ -530,6 +570,13 @@ function App() {
     }
   }, [currentStepIndex, allSteps, isPlaying, intervalId]);
 
+  const handleStop = () => {
+    setIsPlaying(false);
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-700 p-4 md:p-6 text-gray-900 font-sans">
@@ -623,6 +670,8 @@ function App() {
             </div>
           </div>
         </main>
+
+        <FloatingStopButton onStop={handleStop} isPlaying={isPlaying} />
 
         <footer className="text-center mt-6 py-4 border-t border-gray-200">
           <p className="text-xs text-gray-500">Visualizer to explain the Tower of Hanoi algorithm.</p>
